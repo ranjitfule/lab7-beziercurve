@@ -1,1 +1,271 @@
 
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+*{ padding: 0; margin: 0;}
+
+.app{
+	background: #f1f1f1;
+	position: absolute;
+	width: 1460px;
+	height: 720px;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 0;
+	overflow: auto;
+}
+
+#ap1{
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 1;
+}
+
+#control{
+	width: 340px;
+	height: auto;
+	background: #fff;
+	box-shadow: 0 0 10px rgba(0,0,0,0.25);
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	z-index: 2;
+	padding: 5px;
+	box-sizing: border-box;
+}
+
+#control p{
+	padding: 2px 10px;
+}
+
+
+#canvas{
+	background: inherit;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 1;
+	border: 1px solid #dfdfdf;
+}
+
+.box{
+	border-radius: 50%;
+	padding: 10px;
+	position: absolute;
+	top: 50%;
+	color: white;
+	text-align: center;
+	z-index: 4;
+}
+
+#box1{
+	left: 1.0%;
+	transform: translateY(-50%);
+	background: orange;
+}
+
+#box2{
+	left: 99.0%;
+	transform: translate(-99.0%, -50%);
+	background: magenta;
+}
+
+.app-name{
+
+	text-align: center;
+	color: white;
+	background: #4CAF50ff;
+	position: absolute;
+	width: 200px;
+	font-size: 24px;
+	font-weight: bolder;
+	padding: 10px 20px;
+	z-index: 3;
+	
+}
+
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+	<div class="app-name">
+		Bezier-Curve
+	</div>
+	<div id="control">
+	
+		<p>X1: <input type="range" id="x1" min=0 max=1400 oninput="fun2()" value=0><span id="xp1"></span></p>
+		<p>Y1: <input type="range" id="y1" min=0 max=680 oninput="fun2()" value=340><span id="yp1"></span></p>
+		<p>X2: <input type="range" id="x2" min=0 max=1400 oninput="fun2()" value="1400"><span id="xp2"></span></p>
+		<p>Y2: <input type="range" id="y2" min=0 max=680 oninput="fun2()" value="340"><span id="yp1"></span></p>
+		
+		<p>ScaleX: 0.4<input id="sx1" type="range" min=40 max=100 step=1 value=100 oninput="funct(this)"><span id="scalex">1.0</span></p>
+		
+		<p>ScaleY: 0.4<input  id="sy1" type="range" min=40 max=100 step=1 value=100 oninput="funct(this)"><span id="scaleY">1.0</span></p>
+		
+		<!--<p>CX1 = <span id="cx1"></span></p>
+		<p>CY1 = <span id="cy1"></span></p>
+		<p>CX2 = <span id="cx2"></span></p>
+		<p>CY2 = <span id="cy2"></span></p>
+		-->
+	
+	</div>
+	<div id="ap1">
+		<canvas id="canvas"></canvas>
+		<div class="box" id="box1"></div>
+		<div class="box" id="box2"></div>
+	</div>
+</div>
+</body>
+<script>
+
+var c = document.getElementById("canvas");
+var ctx = c.getContext("2d");
+var ap1 = document.getElementById("app");
+var width = document.documentElement.clientWidth;
+var height = document.documentElement.clientHeight;
+
+ap1.style.width = width + "px";
+ap1.style.height = height + "px";
+
+c.width = width * 0.95;
+c.height = height;
+
+function drawgraph(ctx){
+
+	ctx.beginPath();
+	ctx.strokeStyle = "#afafaf";
+	ctx.lineWidth = 1;
+	
+	for(x = 0; x < c.width/10; x++){
+	
+		ctx.moveTo(x*c.width/10, 0);
+		ctx.lineTo(x*c.width/10, c.height);
+	}
+	
+	for(x = 0; x < c.height/10; x++){
+	
+		ctx.moveTo(0, x*c.height/10);
+		ctx.lineTo(x*c.width, x*c.height/10);
+	}
+	
+	ctx.stroke();
+	ctx.closePath();
+	
+	ctx.beginPath();
+	ctx.strokeStyle = "#445";
+	ctx.lineWidth = 3;
+	
+	ctx.moveTo(c.width/2, 0)
+	ctx.lineTo(c.width/2, c.height);
+	
+	ctx.moveTo(0, c.height/2);
+	ctx.lineTo(c.width, c.height/2);
+	
+	ctx.stroke();
+	ctx.closePath();
+
+}
+
+var x1 = 0, y1 = c.height/2, x2 = c.width, y2 = c.height/2;
+
+function drawCurve(ctx, div1, div2){
+
+	ctx.clearRect(0, 0, c.width, c.height);
+	drawgraph(ctx);
+	ctx.beginPath();
+	ctx.strokeStyle = "blue";
+	ctx.lineWidth = 5;
+	ctx.moveTo(x1, y1);
+	ctx.bezierCurveTo(div1.offsetLeft, div1.offsetTop, div2.offsetLeft, div2.offsetTop, x2, y2);
+	ctx.stroke();
+	ctx.closePath();
+
+}
+
+var div1 = document.getElementById("box1");
+var div2 = document.getElementById("box2");
+var app = document.getElementById("app");
+
+drawCurve(ctx, div1, div2);
+
+function drag(div){
+
+	var px1 = 0, px2 = 0;
+	var py1 = 0, py2 = 0;
+	
+	div.onmousedown = function(e){
+	
+		px1 = e.clientX;
+		py1 = e.clientY;
+		
+		app.onmousemove = dragElement;
+		
+		app.onmouseup = closeDrag;
+		
+		document.getElementById("control").style.backgroundColor = "#fff7";
+		
+	};
+	
+	function closeDrag(e1){
+	
+		document.getElementById("control").style.backgroundColor = "#fff";
+	
+		app.onmousemove = null;
+		
+		app.onmouseup = null;
+	
+	}
+	
+	function dragElement(e1){
+		
+			px2 = px1 - e1.clientX;
+			py2 = py1 - e1.clientY;
+			
+			px1 = e1.clientX;
+			py1 = e1.clientY;
+			
+			div.style.top = div.offsetTop - py2 + "px";
+			div.style.left = div.offsetLeft - px2 + "px";
+			
+			drawCurve(ctx, div1, div2);
+		
+		};
+
+}
+
+drag(div1);
+drag(div2);
+
+drawgraph(ctx);
+
+function funct(elem){
+
+	var sx1 = document.getElementById("sx1");
+	var sy1 = document.getElementById("sy1"); 
+	ap1.style.transform = "translate(-50%, -50%) scale(" + sx1.value/100 + ", "+ sy1.value/100 +")";
+
+}
+
+function fun2(){
+	
+	x1 = document.getElementById("x1").value;
+	y1 = document.getElementById("y1").value;
+	x2 = document.getElementById("x2").value;
+	y2 = document.getElementById("y2").value;
+	
+	drawCurve(ctx, div1, div2);
+	
+}
+
+</script>
+</html>
+
